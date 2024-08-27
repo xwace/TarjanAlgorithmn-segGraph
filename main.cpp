@@ -22,17 +22,19 @@ void breakUpCycles(vector<pair<int, int>> &adjacentRoomPairs) {
 
     function<void(int u, int p, int color[], int par[], int &cyclenumber)> dfs_cycle;
     dfs_cycle = [&](int u, int p, int color[], int par[], int &cyclenumber) {
+        //已经完整搜索过，所有子节点都被dfs过的节点被标记为2
         if (color[u] == 2) {
             return;
         }
 
+        //已搜索过一次的点，即回边，说明形成了环
         if (color[u] == 1) {
             vector<int> v;
             cyclenumber++;
 
             int cur = p;
             v.push_back(cur);
-
+            //一直搜索父节点直到搜完完整环
             while (cur != u) {
                 cur = par[cur];
                 v.push_back(cur);
@@ -40,19 +42,20 @@ void breakUpCycles(vector<pair<int, int>> &adjacentRoomPairs) {
             cycles.push_back(v);
             return;
         }
-        par[u] = p;
 
+        //标记当前点的父节点和搜索次数
+        par[u] = p;
         color[u] = 1;
 
         // simple dfs on graph
         for (int v: graph[u]) {
-
+            //跳过父节点
             if (v == par[u]) {
                 continue;
             }
             dfs_cycle(v, u, color, par, cyclenumber);
         }
-
+        //完全搜索的点标记，归的时候这个节点可以跳过，节省搜索时间
         color[u] = 2;
     };
 
@@ -64,6 +67,7 @@ void breakUpCycles(vector<pair<int, int>> &adjacentRoomPairs) {
         while (it != c.end()) {
             auto found = has_outlier(outliers, pair<int, int>{c.front(), *it});
             if (!found) {
+                //找到环中的第一对点，删除，即可打断环
                 outliers.emplace_back(c.front(), *it);
                 break;
             } else it++;
